@@ -49,12 +49,16 @@ void arser::argument_parser::parse(std::span<const  char*> const& arguments)
     {
         auto const& [name, alias] = argument.value().get_name();
         std::cerr << "MISSING REQUIRED ARGUMENT " << std::quoted(!name.empty() ? name : alias) << '\n';
+
+        return;
     }
 
     if (auto argument = argument_parser::has_argument_with_missing_value(*this))
     {
         auto const& [name, alias] = argument.value().get_name();
         std::cerr << "MISSING VALUE FOR NON-FLAG ARGUMENT " << std::quoted(!name.empty() ? name : alias) << '\n';
+
+        return;
     }
 
     if (auto argument = argument_parser::has_argument_with_missing_dependencies(*this))
@@ -69,6 +73,8 @@ void arser::argument_parser::parse(std::span<const  char*> const& arguments)
         }
 
         std::cerr << "]\n";
+
+        return;
     }
 }
 
