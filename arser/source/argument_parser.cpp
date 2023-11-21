@@ -65,14 +65,14 @@ void arser::argument_parser::parse(std::span<const  char*> const& arguments)
     {
         auto const& [name, alias] = argument->first.get_name();
 
-        std::cerr << "MISSING THE FOLLOWING DEPENDENCIES FOR ARGUMENT " << std::quoted(!name.empty() ? name : alias) << " [ ";
+        std::cerr << "MISSING DEPENDENCIES [ ";
 
         for (auto const& [_name, _alias] : argument->second)
         {
             std::cerr << (!_name.empty() ? _name : _alias) << ' ';
         }
 
-        std::cerr << "]\n";
+        std::cerr << "] REQUIRED BY ARGUMENT " << std::quoted(!name.empty() ? name : alias) << '\n';
 
         return;
     }
