@@ -12,7 +12,7 @@ namespace arser {
         using argument_const_iterator_t = std::vector<arser::argument>::const_iterator;
 
     public:
-        auto const& get_registered_arguments() const { return this->arguments; }
+        auto const& get_registered_arguments() const noexcept { return this->arguments; }
 
         argument_const_iterator_t find_registered_argument(std::pair<std::string_view, std::string_view> argumentNameorAlias) const;
 
