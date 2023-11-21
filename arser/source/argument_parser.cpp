@@ -33,7 +33,7 @@ bool arser::argument_parser::contains(std::string_view argumentName, std::string
     return this->argumentsMap.contains(argumentName.data()) || this->argumentsMap.contains(argumentAlias.data());
 }
 
-void arser::argument_parser::parse(std::span<const char*> const& arguments)
+void arser::argument_parser::parse(std::span<const  char*> const& arguments)
 {
     auto argumentsStack = argument_parser::tokenize(arguments, this->argumentRegister);
 
