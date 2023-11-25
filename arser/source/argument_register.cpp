@@ -4,16 +4,16 @@
 
 using argument_const_iterator_t = arser::argument_register::argument_const_iterator_t;
 
-argument_const_iterator_t arser::argument_register::find_registered_argument(std::pair<std::string_view, std::string_view> name) const
+argument_const_iterator_t arser::argument_register::find_registered_argument(std::string_view argumentName, std::string_view argumentAlias) const
 {
     return std::ranges::find_if(this->arguments, [&] (arser::argument const& argument)
     {
-        return argument.get_name().first == name.first || argument.get_name().second == name.second;
+        return argument.get_name().first == argumentName || (!argumentAlias.empty() && argument.get_name().second == argumentAlias);
     });
 }
 
-bool arser::argument_register::contains(std::pair<std::string_view, std::string_view> argumentNameorAlias) const
+bool arser::argument_register::contains(std::string_view argumentName, std::string_view argumentAlias) const
 {
-    return this->find_registered_argument(argumentNameorAlias) != this->arguments.end();
+    return this->find_registered_argument(argumentName, argumentAlias) != this->arguments.end();
 }
 

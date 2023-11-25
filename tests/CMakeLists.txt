@@ -1,0 +1,3 @@
+add_subdirectory(argument_aliasing)
+add_subdirectory(argument_dependency)
+add_subdirectory(argument_parsing)

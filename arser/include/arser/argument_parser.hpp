@@ -18,9 +18,9 @@ namespace arser {
         {}
 
         auto const& get_arguments() const noexcept { return this->argumentsMap; }
-        argument const& get_argument(std::string_view argumentName, std::string_view argumentAlias = "") const;
+        argument const& get_argument(std::string_view argumentName) const;
 
-        bool contains(std::string_view argumentName, std::string_view argumentAlias = "") const;
+        bool contains(std::string_view argumentName) const;
 
         static std::optional<argument> has_missing_required_argument(argument_parser const& argumentParser, argument_register const& argumentRegister);
         static std::optional<argument> has_argument_with_missing_value(argument_parser const& argumentParser);

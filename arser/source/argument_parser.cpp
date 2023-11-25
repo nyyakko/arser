@@ -18,19 +18,14 @@ namespace detail {
 
 }
 
-arser::argument const& arser::argument_parser::get_argument(std::string_view argumentName, std::string_view argumentAlias) const
+arser::argument const& arser::argument_parser::get_argument(std::string_view argumentName) const
 {
-    if (this->argumentsMap.contains(argumentName.data()))
-    {
-        return this->argumentsMap.at(argumentName.data());
-    }
-
-    return this->argumentsMap.at(argumentAlias.data());
+    return this->argumentsMap.at(argumentName.data());
 }
 
-bool arser::argument_parser::contains(std::string_view argumentName, std::string_view argumentAlias) const
+bool arser::argument_parser::contains(std::string_view argumentName) const
 {
-    return this->argumentsMap.contains(argumentName.data()) || this->argumentsMap.contains(argumentAlias.data());
+    return this->argumentsMap.contains(argumentName.data());
 }
 
 void arser::argument_parser::parse(std::span<const  char*> const& arguments)
@@ -40,24 +35,21 @@ void arser::argument_parser::parse(std::span<const  char*> const& arguments)
     while (!argumentsStack.empty())
     {
         auto const& argument = argumentsStack.top();
-        auto const& [name, alias] = argument.get_name();
-        this->argumentsMap[!name.empty() ? name : alias] = argument;
+        this->argumentsMap[argument.get_name().first] = argument;
         argumentsStack.pop();
     }
 
     if (auto argument = argument_parser::has_missing_required_argument(*this, this->argumentRegister))
     {
         auto const& [name, alias] = argument.value().get_name();
-        std::cerr << "MISSING REQUIRED ARGUMENT " << std::quoted(!name.empty() ? name : alias) << '\n';
-
+        std::cerr << "MISSING REQUIRED ARGUMENT " << std::quoted(name) << '\n';
         return;
     }
 
     if (auto argument = argument_parser::has_argument_with_missing_value(*this))
     {
         auto const& [name, alias] = argument.value().get_name();
-        std::cerr << "MISSING VALUE FOR NON-FLAG ARGUMENT " << std::quoted(!name.empty() ? name : alias) << '\n';
-
+        std::cerr << "MISSING VALUE FOR NON-FLAG ARGUMENT " << std::quoted(name) << '\n';
         return;
     }
 
@@ -69,11 +61,10 @@ void arser::argument_parser::parse(std::span<const  char*> const& arguments)
 
         for (auto const& [_name, _alias] : argument->second)
         {
-            std::cerr << (!_name.empty() ? _name : _alias) << ' ';
+            std::cerr << (_name) << ' ';
         }
 
-        std::cerr << "] REQUIRED BY ARGUMENT " << std::quoted(!name.empty() ? name : alias) << '\n';
-
+        std::cerr << "] REQUIRED BY ARGUMENT " << std::quoted(name) << '\n';
         return;
     }
 }
@@ -86,7 +77,7 @@ std::stack<arser::argument> arser::argument_parser::tokenize(std::span<char cons
     {
         if (argument.starts_with("-"))
         {
-            auto argumentIterator = argumentRegister.find_registered_argument({ argument, argument });
+            auto argumentIterator = argumentRegister.find_registered_argument(argument, argument);
 
             if (argumentIterator != argumentRegister.get_registered_arguments().end())
             {
@@ -110,9 +101,19 @@ std::stack<arser::argument> arser::argument_parser::tokenize(std::span<char cons
             {
                 assert(false && "UNREACHABLE");
             },
-            [&] (auto kind) requires std::is_same_v<std::decay_t<decltype(kind)>, kind::string_t>
+            [&] (auto kind) requires std::is_same_v<std::decay_t<decltype(kind)>, kind::boolean_t>
             {
-                argumentStack.top().set_value(argument.data());
+                auto value = std::ranges::to<std::string>(argument | std::views::transform(::tolower));
+
+                if (value != "true" && value != "false" && value != "1" && value != "0")
+                {
+                    std::cerr << "IGNORING UNRECOGNIZED BOOLEAN VALUE: " << std::quoted(argument) << '\n';
+                    argumentStack.top().set_value(false);
+                }
+                else
+                {
+                   argumentStack.top().set_value(argument == "true" ? true : argument == "1" ? true : false);
+                }
             },
             [&] (auto kind)
             {
@@ -132,7 +133,7 @@ std::optional<arser::argument> arser::argument_parser::has_missing_required_argu
 {
     for (auto const& argument : argumentRegister.get_registered_arguments() | std::views::filter(&arser::argument::is_required))
     {
-        if (!argumentParser.contains(argument.get_name().first, argument.get_name().second))
+        if (!argumentParser.contains(argument.get_name().first))
         {
             return argument;
         }

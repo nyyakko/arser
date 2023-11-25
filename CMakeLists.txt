@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.5)
 project(arser LANGUAGES CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -16,5 +16,8 @@ include(GNUInstallDirs)
 # set(arser_ExternalLibraries)
 #
 
+enable_testing()
+
 add_subdirectory(arser)
+add_subdirectory(tests)
 

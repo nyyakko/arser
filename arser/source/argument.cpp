@@ -19,24 +19,13 @@ bool arser::argument::has_value() const noexcept
     }(std::make_index_sequence<variantSize>{});
 }
 
-bool arser::argument::has_dependencies() const noexcept
-{
-    return !this->dependencies.empty();
-}
-
-bool arser::argument::is_required() const noexcept
-{
-    return this->level == level::required;
-}
-
-bool arser::argument::is_optional() const noexcept
-{
-    return this->level == level::optional;
-}
-
 arser::argument& arser::argument::depends_on(std::string_view dependencyName, std::string_view dependencyAlias)
 {
     this->dependencies.emplace_back(dependencyName, dependencyAlias);
     return *this;
 }
 
+bool arser::argument::operator==(argument const& lhs) const noexcept
+{
+    return this->name.first == lhs.name.first || (!this->name.second.empty() && this->name.second == lhs.name.second);
+}

@@ -44,8 +44,6 @@ namespace arser {
     {
         struct empty_t {};
     public:
-        using name_t = std::pair<std::string, std::string>;
-
         argument() = default;
 
         argument(std::string_view argumentName, level::level_t argumentLevel):
@@ -72,27 +70,24 @@ namespace arser {
 
         void set_value(auto const& newValue) noexcept { this->value = newValue; }
 
-        bool has_dependencies() const noexcept;
+        bool has_dependencies() const noexcept { return !this->dependencies.empty(); }
         bool has_value() const noexcept;
 
-        bool is_required() const noexcept;
-        bool is_optional() const noexcept;
+        bool is_required() const noexcept { return this->level == level::required; }
+        bool is_optional() const noexcept { return this->level == level::optional; }
 
         argument& depends_on(std::string_view dependencyName, std::string_view dependencyAlias = "");
 
-        auto operator==(argument const& lhs) const noexcept
-        {
-            return this->name.first == lhs.name.first || this->name.second == lhs.name.second;
-        }
+        bool operator==(argument const& lhs) const noexcept;
 
     private:
-        name_t name;
+        std::pair<std::string, std::string> name;
         kind::kind_t kind {};
         level::level_t level {};
 
         std::variant<empty_t, kind::boolean_t::type, kind::integer_t::type, kind::decimal_t::type, kind::string_t::type> value {};
 
-        std::vector<name_t> dependencies {};
+        std::vector<std::pair<std::string, std::string>> dependencies {};
     };
 
 }

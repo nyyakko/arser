@@ -1,0 +1,2 @@
+add_subdirectory(boolean_parsing)
+add_subdirectory(generic_parsing)
