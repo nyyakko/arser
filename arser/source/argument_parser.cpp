@@ -112,7 +112,7 @@ std::stack<arser::argument> arser::argument_parser::tokenize(std::span<char cons
                 }
                 else
                 {
-                   argumentStack.top().set_value(argument == "true" ? true : argument == "1" ? true : false);
+                    argumentStack.top().set_value(argument == "true" ? true : argument == "1" ? true : false);
                 }
             },
             [&] (auto kind)
