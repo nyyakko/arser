@@ -2,12 +2,11 @@
 #include "argument.hpp"
 
 #include <algorithm>
-#include <functional>
-#include <iomanip>
+#include <cassert>
 #include <iostream>
+#include <print>
 #include <ranges>
 #include <sstream>
-#include <cassert>
 
 namespace detail {
 
@@ -41,30 +40,26 @@ void arser::argument_parser::parse(std::span<const  char*> const& arguments)
 
     if (auto argument = argument_parser::has_missing_required_argument(*this, this->argumentRegister))
     {
-        auto const& [name, alias] = argument.value().get_name();
-        std::cerr << "MISSING REQUIRED ARGUMENT " << std::quoted(name) << '\n';
+        std::println(std::cerr, "[arser/warn] missing required argument: {}\n", argument.value().get_name().first);
         return;
     }
 
     if (auto argument = argument_parser::has_argument_with_missing_value(*this))
     {
-        auto const& [name, alias] = argument.value().get_name();
-        std::cerr << "MISSING VALUE FOR NON-FLAG ARGUMENT " << std::quoted(name) << '\n';
+        std::println(std::cerr, "[arser/warn] missing value for non-flag argument: {}", argument.value().get_name().first);
         return;
     }
 
     if (auto argument = argument_parser::has_argument_with_missing_dependencies(*this))
     {
-        auto const& [name, alias] = argument->first.get_name();
-
-        std::cerr << "MISSING DEPENDENCIES [ ";
+        std::println(std::cerr, "[arser/warn] argument {} requires the following dependencies: ", argument->first.get_name().first);
 
         for (auto const& [_name, _alias] : argument->second)
         {
-            std::cerr << (_name) << ' ';
+            std::println(std::cerr, "{} ", _name);
         }
 
-        std::cerr << "] REQUIRED BY ARGUMENT " << std::quoted(name) << '\n';
+        std::print(std::cerr, "\n");
         return;
     }
 }
@@ -85,13 +80,13 @@ std::stack<arser::argument> arser::argument_parser::tokenize(std::span<char cons
                 continue;
             }
 
-            std::cerr << "IGNORING UNRECOGNIZED ARGUMENT: " << std::quoted(argument) << '\n';
+            std::println(std::cerr, "[arser/warn] ignoring unrecognized argument: {}", argument);
             continue;
         }
 
         if (argumentStack.empty() || argumentStack.top().has_value() || arser::argument_is<kind::flag_t>(argumentStack.top()))
         {
-            std::cerr << "IGNORING EXTRANEOUS ARGUMENT VALUE: " << std::quoted(argument) << '\n';
+            std::println(std::cerr, "[arser/warn] ignoring extraneous argument value: {}", argument);
             continue;
         }
 
@@ -107,12 +102,12 @@ std::stack<arser::argument> arser::argument_parser::tokenize(std::span<char cons
 
                 if (value != "true" && value != "false" && value != "1" && value != "0")
                 {
-                    std::cerr << "IGNORING UNRECOGNIZED BOOLEAN VALUE: " << std::quoted(argument) << '\n';
+                    std::println(std::cerr, "[arser/warn] ignoring unrecognized boolean value: ", argument);
                     argumentStack.top().set_value(false);
                 }
                 else
                 {
-                    argumentStack.top().set_value(argument == "true" ? true : argument == "1" ? true : false);
+                    argumentStack.top().set_value(argument == "true" || argument == "1");
                 }
             },
             [&] (auto kind)
@@ -144,12 +139,12 @@ std::optional<arser::argument> arser::argument_parser::has_missing_required_argu
 
 std::optional<arser::argument> arser::argument_parser::has_argument_with_missing_value(argument_parser const& argumentParser)
 {
-    auto arguments = argumentParser.get_arguments() | std::views::values;
-    auto argument  = std::ranges::find_if(arguments, std::not_fn(&arser::argument::has_value));
-
-    if (argument != arguments.end())
+    for (auto const& argument : argumentParser.get_arguments() | std::views::values)
     {
-        return *argument;
+        if (!argument.has_value())
+        {
+            return argument;
+        }
     }
 
     return std::nullopt;

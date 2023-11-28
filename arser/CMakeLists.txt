@@ -33,22 +33,5 @@ install(EXPORT      ${PROJECT_NAME}Targets
 
 install(FILES ${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}Config.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}/cmake)
 
-target_compile_options(${PROJECT_NAME} PRIVATE
-    -Werror
-    -Wall
-    -Wextra
-    -Wshadow
-    -Wnon-virtual-dtor
-    -Wold-style-cast
-    -Wcast-align
-    -Wunused
-    -Woverloaded-virtual
-    -Wpedantic
-    -Wconversion
-    -Wsign-conversion
-    -Wnull-dereference
-    -Wdouble-promotion
-    -Wimplicit-fallthrough
-)
-
+target_compile_options(${PROJECT_NAME} PRIVATE ${arser_CompilerOptions})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${arser_ExternalLibraries})

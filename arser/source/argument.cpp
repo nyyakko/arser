@@ -7,7 +7,7 @@ bool arser::argument::has_value() const noexcept
         return true;
     }
 
-    static constexpr auto variantSize = std::variant_size_v<decltype(this->kind)> - 1;
+    static constexpr auto VARIANT_SIZE = std::variant_size_v<decltype(this->kind)> - 1;
 
     return [this] <std::size_t ... I> (std::index_sequence<I...>)
     {
@@ -16,7 +16,7 @@ bool arser::argument::has_value() const noexcept
                         decltype(std::get<I + 1>(this->kind))
                     >::type
                 >(this->value) || ...);
-    }(std::make_index_sequence<variantSize>{});
+    }(std::make_index_sequence<VARIANT_SIZE>{});
 }
 
 arser::argument& arser::argument::depends_on(std::string_view dependencyName, std::string_view dependencyAlias)
