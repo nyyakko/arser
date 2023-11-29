@@ -8,28 +8,42 @@
 #include <ranges>
 #include <sstream>
 
-namespace detail {
+namespace arser {
 
-    template <class ... Ts> struct overload : Ts ...
-    {
-        using Ts::operator()...;
-    };
+    namespace detail {
 
+        template <class ... Ts> struct overload : Ts ...
+        {
+            using Ts::operator()...;
+        };
+
+    }
+
+std::size_t argument_parser::get_number_of_arguments() const noexcept
+{
+    return this->numberOfArguments;
 }
 
-arser::argument const& arser::argument_parser::get_argument(std::string_view argumentName) const
+argument_parser::arguments_t const& argument_parser::get_arguments() const noexcept
+{
+    return this->argumentsMap;
+}
+
+argument const& argument_parser::get_argument(std::string_view argumentName) const
 {
     return this->argumentsMap.at(argumentName.data());
 }
 
-bool arser::argument_parser::contains(std::string_view argumentName) const
+bool argument_parser::contains(std::string_view argumentName) const
 {
     return this->argumentsMap.contains(argumentName.data());
 }
 
-void arser::argument_parser::parse(std::span<const  char*> const& arguments)
+void argument_parser::parse(std::span<const  char*> const& arguments)
 {
     auto argumentsStack = argument_parser::tokenize(arguments, this->argumentRegister);
+
+    this->numberOfArguments = argumentsStack.size();
 
     while (!argumentsStack.empty())
     {
@@ -64,9 +78,9 @@ void arser::argument_parser::parse(std::span<const  char*> const& arguments)
     }
 }
 
-std::stack<arser::argument> arser::argument_parser::tokenize(std::span<char const*> const& arguments, argument_register const& argumentRegister)
+std::stack<argument> argument_parser::tokenize(std::span<char const*> const& arguments, argument_register const& argumentRegister)
 {
-    std::stack<arser::argument> argumentStack {};
+    std::stack<argument> argumentStack {};
 
     for (auto argument : arguments | std::views::transform([] (auto value) { return std::string_view(value); }))
     {
@@ -124,9 +138,9 @@ std::stack<arser::argument> arser::argument_parser::tokenize(std::span<char cons
     return argumentStack;
 }
 
-std::optional<arser::argument> arser::argument_parser::has_missing_required_argument(argument_parser const& argumentParser, argument_register const& argumentRegister)
+std::optional<argument> argument_parser::has_missing_required_argument(argument_parser const& argumentParser, argument_register const& argumentRegister)
 {
-    for (auto const& argument : argumentRegister.get_registered_arguments() | std::views::filter(&arser::argument::is_required))
+    for (auto const& argument : argumentRegister.get_registered_arguments() | std::views::filter(&argument::is_required))
     {
         if (!argumentParser.contains(argument.get_name().first))
         {
@@ -137,7 +151,7 @@ std::optional<arser::argument> arser::argument_parser::has_missing_required_argu
     return std::nullopt;
 }
 
-std::optional<arser::argument> arser::argument_parser::has_argument_with_missing_value(argument_parser const& argumentParser)
+std::optional<argument> argument_parser::has_argument_with_missing_value(argument_parser const& argumentParser)
 {
     for (auto const& argument : argumentParser.get_arguments() | std::views::values)
     {
@@ -150,7 +164,7 @@ std::optional<arser::argument> arser::argument_parser::has_argument_with_missing
     return std::nullopt;
 }
 
-std::optional<std::pair<arser::argument, std::vector<std::pair<std::string_view, std::string_view>>>> arser::argument_parser::has_argument_with_missing_dependencies(argument_parser const& argumentParser)
+std::optional<std::pair<argument, argument_parser::dependencies_t>> argument_parser::has_argument_with_missing_dependencies(argument_parser const& argumentParser)
 {
     auto arguments = argumentParser.get_arguments() | std::views::values;
 
@@ -178,4 +192,6 @@ std::optional<std::pair<arser::argument, std::vector<std::pair<std::string_view,
     }
 
     return std::nullopt;
+}
+
 }

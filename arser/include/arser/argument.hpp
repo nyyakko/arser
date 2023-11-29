@@ -43,7 +43,12 @@ namespace arser {
     class argument
     {
         struct empty_t {};
+
     public:
+        using name_t         = std::pair<std::string, std::string>;
+        using value_t        = std::variant<empty_t, kind::boolean_t::type, kind::integer_t::type, kind::decimal_t::type, kind::string_t::type>;
+        using dependencies_t = std::vector<std::pair<std::string, std::string>>;
+
         argument() = default;
 
         argument(std::string_view argumentName, level::level_t argumentLevel):
@@ -62,32 +67,32 @@ namespace arser {
             name(argumentName, argumentAlias), kind(argumentKind), level(argumentLevel)
         {}
 
-        auto const& get_name() const noexcept { return this->name; }
-        auto const& get_kind() const noexcept { return this->kind; }
-        auto const& get_level() const noexcept { return this->level; }
-        auto const& get_value() const noexcept { return this->value; }
-        auto const& get_dependencies() const noexcept { return this->dependencies; }
+        name_t const& get_name() const noexcept;
+        kind::kind_t const& get_kind() const noexcept;
+        level::level_t const& get_level() const noexcept;
+        value_t const& get_value() const noexcept;
+        dependencies_t const& get_dependencies() const noexcept;
 
-        void set_value(auto const& newValue) noexcept { this->value = newValue; }
+        auto set_value(auto const& newValue) noexcept { this->value = newValue; }
 
-        bool has_dependencies() const noexcept { return !this->dependencies.empty(); }
+        bool has_dependencies() const noexcept;
         bool has_value() const noexcept;
 
-        bool is_required() const noexcept { return this->level == level::required; }
-        bool is_optional() const noexcept { return this->level == level::optional; }
+        bool is_required() const noexcept;
+        bool is_optional() const noexcept;
 
         argument& depends_on(std::string_view dependencyName, std::string_view dependencyAlias = "");
 
         bool operator==(argument const& lhs) const noexcept;
 
     private:
-        std::pair<std::string, std::string> name;
+        name_t name;
         kind::kind_t kind {};
         level::level_t level {};
 
-        std::variant<empty_t, kind::boolean_t::type, kind::integer_t::type, kind::decimal_t::type, kind::string_t::type> value {};
+        value_t value {};
 
-        std::vector<std::pair<std::string, std::string>> dependencies {};
+        dependencies_t dependencies {};
     };
 
 }

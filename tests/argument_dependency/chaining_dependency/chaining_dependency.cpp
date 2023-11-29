@@ -3,13 +3,11 @@
 
 #include <utility>
 
-void correct_dependency_chain(arser::argument_parser const& argumentParser)
+void missing_two_dependencies(arser::argument_parser const& argumentParser)
 {
     if (!argumentParser.contains("--C1")) return;
 
-    auto argument = arser::argument_parser::has_argument_with_missing_dependencies(argumentParser);
-
-    if (argument)
+    if (arser::argument_parser::has_argument_with_missing_dependencies(argumentParser))
     {
         std::exit(1);
     }
@@ -43,7 +41,7 @@ int main(int argumentCount, char const** argumentValues)
     arser::argument_parser argumentParser { argumentRegister };
     argumentParser.parse(arguments | std::views::drop(1));
 
-    correct_dependency_chain(argumentParser);
+    missing_two_dependencies(argumentParser);
     incorrect_dependency_chain(argumentParser);
 }
 

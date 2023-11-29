@@ -1,8 +1,6 @@
 #include <arser/argument_parser.hpp>
 #include <arser/argument_register.hpp>
 
-#include <iostream>
-
 void parse_integer(arser::argument_parser const& argumentParser)
 {
     if (!argumentParser.contains("--integer")) return;

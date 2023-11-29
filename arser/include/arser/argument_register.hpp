@@ -10,10 +10,10 @@ namespace arser {
     class argument_register
     {
     public:
-        using argument_const_iterator_t = std::vector<arser::argument>::const_iterator;
+        using argument_const_iterator_t = std::vector<argument>::const_iterator;
+        using arguments_t               = std::vector<argument>;
 
-    public:
-        auto const& get_registered_arguments() const noexcept { return this->arguments; }
+        arguments_t const& get_registered_arguments() const noexcept;
 
         argument_const_iterator_t find_registered_argument(std::string_view argumentName, std::string_view argumentAlias = "") const;
 
